@@ -1,7 +1,9 @@
 import sys
-from manpage import Manpage, ManpageNotFoundException
 
-from state import load_state, save_state
+from langchain.memory import ConversationBufferWindowMemory
+
+from manpage import Manpage, ManpageNotFoundException
+from state import State
 
 SIGIL = ":"
 
@@ -27,12 +29,14 @@ class Command:
 class Change(Command):
     name = f"{SIGIL}change"
 
-    def execute(self, args):
+    def execute(self, args, state):
         try:
             manpage = Manpage(args[0])
-            state = load_state()
-            state["manpage"] = manpage.to_dict()
-            save_state(state)
+
+            # Refreshing man page and memory
+            state.manpage = manpage
+            state.memory = ConversationBufferWindowMemory(k=50)
+
         except ManpageNotFoundException:
             sys.stderr.write(f"Could not find manpage `{args[0]}`.\n")
 

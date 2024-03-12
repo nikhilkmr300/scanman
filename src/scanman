@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import argparse
+import logging
 import os
 import readline
 import sys
@@ -12,32 +13,31 @@ from cli import prompt
 from commands import Command
 from manpage import Manpage
 from rag import ERROR_MSG, ask, load_retriever
-from state import load_state, save_state
+from state import State
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.ERROR)
+logger.setLevel(logging.ERROR)
 
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser(prog=os.path.basename(__file__))
     argparser.add_argument("manpage")
     args = argparser.parse_args()
 
-    manpage = Manpage(args.manpage)
-    state = {"manpage": manpage.to_dict()}
-    save_state(state)
-
-    memory = ConversationBufferWindowMemory(k=50, return_messages=True)
+    state = State(
+        Manpage(args.manpage),
+        ConversationBufferWindowMemory(k=50, return_messages=True)
+    )
 
     while True:
-        input_ = prompt(manpage=manpage).split(" ")
+        input_ = prompt(manpage=state.manpage).split(" ")
 
         if Command.is_command(input_[0]):
             cmd_name, cmd_args = input_[0], input_[1:]
 
             try:
                 cmd = Command.parse(cmd_name)
-                cmd.execute(cmd_args)
-
-                # Refreshing state as running commands might update it.
-                state = load_state()
-                manpage = Manpage.from_dict(state["manpage"])
+                cmd.execute(cmd_args, state)   # This command may change state.
 
             except ValueError:
                 sys.stderr.write(colored(f"{cmd_name} is not a valid command.\n", "red"))
@@ -45,13 +45,15 @@ if __name__ == "__main__":
         else:
             query = " ".join(input_).strip()
 
-            retriever = load_retriever(manpage)
-            response = ask(query, retriever, memory)["answer"]
+            logger.debug(f"manpage={state.manpage.name}, memory={state.memory.chat_memory}")
 
-            memory.chat_memory.add_user_message(query)
-            memory.chat_memory.add_ai_message(response)
+            retriever = load_retriever(state.manpage)
+            response = ask(query, retriever, state.memory)["answer"]
+
+            state.memory.chat_memory.add_user_message(query)
+            state.memory.chat_memory.add_ai_message(response)
 
             if ERROR_MSG in response:
                 print(colored(response, "red"))
             else:
-                print(response)
+                print(colored(response, "green"))

@@ -1,7 +1,7 @@
 from termcolor import colored
 
 PROMPT_BASE = "scanman"
-PROMPT_COLOR = "green"
+PROMPT_COLOR = "blue"
 
 
 def prompt(manpage=None):
