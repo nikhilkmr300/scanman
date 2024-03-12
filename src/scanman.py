@@ -5,7 +5,7 @@ import readline
 from commands import Command
 from manpage import Manpage
 from state import load_state, save_state
-from ui import prompt
+from cli import prompt
 
 if __name__ == "__main__":
     state = {"manpage": None}
