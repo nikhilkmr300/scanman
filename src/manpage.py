@@ -9,7 +9,7 @@ class Manpage:
         self._validate()
 
     def content(self):
-        return subprocess.run(f"man {self.name}", capture_output=True, shell=True, check=True)
+        return subprocess.run(f"man {self.name}", capture_output=True, shell=True, check=True).stdout.decode("utf-8")
 
     def _validate(self):
         try:
@@ -25,6 +25,12 @@ class Manpage:
         if data:
             return cls(**data)
         return None
+
+    def __eq__(self, other):
+        return self.name == other.name
+
+    def __hash__(self):
+        return hash(self.name)
 
 class ManpageNotFoundException(Exception):
     pass

@@ -36,6 +36,7 @@ class Change(Command):
         except ManpageNotFoundException:
             sys.stderr.write(f"Could not find manpage `{args[0]}`.\n")
 
+
 class Exit(Command):
     name = f"{SIGIL}exit"
 
