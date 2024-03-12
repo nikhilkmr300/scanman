@@ -2,8 +2,8 @@ import sys
 
 from langchain.memory import ConversationBufferWindowMemory
 
-from manpage import Manpage, ManpageNotFoundException
-from state import State
+from .manpage import Manpage, ManpageNotFoundException
+from .state import State
 
 SIGIL = ":"
 

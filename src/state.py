@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from langchain.memory.chat_memory import BaseChatMemory
 
-from manpage import Manpage
+from .manpage import Manpage
 
 
 @dataclass
