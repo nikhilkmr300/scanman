@@ -30,7 +30,7 @@ def prompt(manpage=None):
 
 def cli():
     logging.basicConfig(level=logging.ERROR)
-    logger.setLevel(logging.ERROR)
+    logger.setLevel(logging.INFO)
 
     argparser = argparse.ArgumentParser(prog="scanman")
     argparser.add_argument("manpage")
@@ -39,6 +39,7 @@ def cli():
     state = State(
         Manpage(args.manpage),
         ConversationBufferWindowMemory(k=50, return_messages=True),
+        None
     )
 
     while True:
@@ -58,9 +59,7 @@ def cli():
 
         else:
             query = " ".join(input_).strip()
-
-            retriever = load_retriever(state.manpage)
-            response = ask(query, retriever, state.memory)["answer"]
+            response = ask(query, state)["answer"].lstrip("scanman: ").lstrip("AI: ")
 
             state.memory.chat_memory.add_user_message(query)
             state.memory.chat_memory.add_ai_message(response)

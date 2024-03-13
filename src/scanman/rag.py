@@ -19,6 +19,7 @@ logger = logging.getLogger("scanman")
 def load_retriever(manpage):
     db_path = os.path.join(os.path.expanduser("~"), ".scanman", "embeddings", manpage.name, "embeddings.db")
 
+    # Load if previously calculated
     if os.path.exists(db_path):
         db = FAISS.load_local(
             db_path, OpenAIEmbeddings(), allow_dangerous_deserialization=True
@@ -27,6 +28,7 @@ def load_retriever(manpage):
 
         return db.as_retriever()
 
+    # Otherwise calculate
     else:
         docs = [Document(page_content=manpage.content())]
         splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=20)
@@ -39,12 +41,17 @@ def load_retriever(manpage):
         return db.as_retriever()
 
 
-def ask(query, retriever, memory):
+def ask(query, state):
     llm = ChatOpenAI(temperature=0)
     doc_combiner = create_stuff_documents_chain(
         llm, hub.pull("langchain-ai/retrieval-qa-chat")
     )
-    chain = create_retrieval_chain(retriever, doc_combiner)
+
+    # `retriever` is set to `None` after manpage change.
+    if state.retriever is None:
+        state.retriever = load_retriever(state.manpage)
+
+    chain = create_retrieval_chain(state.retriever, doc_combiner)
 
     system_message = textwrap.dedent(
         f"""\
@@ -62,11 +69,12 @@ def ask(query, retriever, memory):
           and try to bring the conversation back to questions about the man
           page.
 
-        Use the following context: {memory.chat_memory}
+        Use the following context: {state.memory.chat_memory}
         """
     )
     template = ChatPromptTemplate.from_messages(
         [("system", system_message), ("human", "{query}")]
     )
     prompt = template.invoke({"query": query})
+
     return chain.invoke({"input": prompt.to_string()})

@@ -11,7 +11,7 @@ logger = logging.getLogger("scanman")
 
 
 class Command:
-    def execute(self, args):
+    def execute(self, args, state):
         pass
 
     @staticmethod
@@ -35,11 +35,13 @@ class Change(Command):
         try:
             manpage = Manpage(args[0])
 
-            # Refreshing man page and memory
+            # Refreshing man page, memory and retriever
             state.manpage = manpage
+            logger.info(f"Changed manpage to `{state.manpage.name}`.")
             state.memory = ConversationBufferWindowMemory(k=50)
-            logger.info(f"Changed manpage to `{state.manpage}`.")
-            logger.info(f"Refreshed LLM memory.")
+            logger.info("Refreshed LLM memory.")
+            state.retriever = None
+            logger.info("Refreshed retriever.")
 
         except ManpageNotFoundException:
             sys.stderr.write(f"Could not find manpage `{args[0]}`.\n")
@@ -48,5 +50,5 @@ class Change(Command):
 class Exit(Command):
     name = f"{SIGIL}exit"
 
-    def execute(self, args):
+    def execute(self, args, state):
         sys.exit(0)
