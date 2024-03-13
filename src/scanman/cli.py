@@ -30,7 +30,7 @@ def prompt(manpage=None):
 
 def cli():
     logging.basicConfig(level=logging.ERROR)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.ERROR)
 
     argparser = argparse.ArgumentParser(prog="scanman")
     argparser.add_argument("manpage")
