@@ -1,3 +1,5 @@
+import logging
+import os
 import textwrap
 
 from langchain import hub
@@ -9,16 +11,32 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-
 ERROR_MSG = "I'm sorry, I don't know."
+
+logger = logging.getLogger("scanman")
 
 
 def load_retriever(manpage):
-    docs = [Document(page_content=manpage.content())]
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=20)
-    docs = splitter.split_documents(docs)
-    db = FAISS.from_documents(docs, OpenAIEmbeddings())
-    return db.as_retriever()
+    db_path = os.path.join(os.path.expanduser("~"), ".scanman", "embeddings", manpage.name, "embeddings.db")
+
+    if os.path.exists(db_path):
+        db = FAISS.load_local(
+            db_path, OpenAIEmbeddings(), allow_dangerous_deserialization=True
+        )
+        logger.info(f"Loaded embeddings for `{manpage.name}` from {db_path}...")
+
+        return db.as_retriever()
+
+    else:
+        docs = [Document(page_content=manpage.content())]
+        splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=20)
+        docs = splitter.split_documents(docs)
+
+        db = FAISS.from_documents(docs, OpenAIEmbeddings())
+        db.save_local(db_path)
+        logger.info(f"Created and saved embeddings for `{manpage.name}` to {db_path}.")
+
+        return db.as_retriever()
 
 
 def ask(query, retriever, memory):

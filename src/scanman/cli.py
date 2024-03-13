@@ -1,6 +1,7 @@
 import argparse
 import logging
 import sys
+import readline
 
 from langchain.memory import ConversationBufferWindowMemory
 from termcolor import colored
@@ -12,6 +13,8 @@ from .state import State
 
 PROMPT_BASE = "scanman"
 PROMPT_COLOR = "blue"
+
+logger = logging.getLogger("scanman")
 
 
 def prompt(manpage=None):
@@ -26,9 +29,8 @@ def prompt(manpage=None):
 
 
 def cli():
-    logger = logging.getLogger(__name__)
     logging.basicConfig(level=logging.ERROR)
-    logger.setLevel(logging.ERROR)
+    logger.setLevel(logging.INFO)
 
     argparser = argparse.ArgumentParser(prog="scanman")
     argparser.add_argument("manpage")
@@ -57,15 +59,12 @@ def cli():
         else:
             query = " ".join(input_).strip()
 
-            logger.debug(
-                f"manpage={state.manpage.name}, memory={state.memory.chat_memory}"
-            )
-
             retriever = load_retriever(state.manpage)
             response = ask(query, retriever, state.memory)["answer"]
 
             state.memory.chat_memory.add_user_message(query)
             state.memory.chat_memory.add_ai_message(response)
+            logger.debug(f"memory = {state.memory.chat_memory}")
 
             if ERROR_MSG in response:
                 print(colored(response, "red"))

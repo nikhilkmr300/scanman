@@ -1,11 +1,13 @@
+import logging
 import sys
 
 from langchain.memory import ConversationBufferWindowMemory
 
 from .manpage import Manpage, ManpageNotFoundException
-from .state import State
 
 SIGIL = ":"
+
+logger = logging.getLogger("scanman")
 
 
 class Command:
@@ -36,6 +38,8 @@ class Change(Command):
             # Refreshing man page and memory
             state.manpage = manpage
             state.memory = ConversationBufferWindowMemory(k=50)
+            logger.info(f"Changed manpage to `{state.manpage}`.")
+            logger.info(f"Refreshed LLM memory.")
 
         except ManpageNotFoundException:
             sys.stderr.write(f"Could not find manpage `{args[0]}`.\n")
