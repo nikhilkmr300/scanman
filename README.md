@@ -28,10 +28,10 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-Navigate to the `src` directory and install the `scanman` module.
+Install the `scanman` module.
 
 ```bash
-pip install scanman
+pip install .
 ```
 
 ## Using `scanman`
