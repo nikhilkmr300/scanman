@@ -10,7 +10,7 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
-ERROR_MSG = "I can only respond to questions about the current man page."
+ERROR_MSG = "I'm sorry, I don't know."
 
 
 def load_retriever(manpage):
@@ -39,13 +39,12 @@ def ask(query, retriever, memory):
           questions that you may be asked.
         * Appropriately respond to questions about yourself and expectations of
           you.
-        * If the user asks you something that is not relevant to the
-          conversation, respond with "{ERROR_MSG}". Use this option very
-          sparingly and try to bring the conversation back to questions about
-          the man page. Remain polite and helpful.
+        * If the user asks you something that is not relevant to the current man
+          page, respond with "{ERROR_MSG}". Use this option **very** sparingly
+          and try to bring the conversation back to questions about the man
+          page.
 
-        Use the following context:
-        {memory.chat_memory}
+        Use the following context: {memory.chat_memory}
         """
     )
     template = ChatPromptTemplate.from_messages(
