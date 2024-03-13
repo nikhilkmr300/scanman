@@ -14,6 +14,11 @@ setup(
         "langchain-openai",
         "langchainhub",
         "openai",
-        "termcolor"
+        "termcolor",
     ],
+    entry_points={
+        "console_scripts": [
+            "scanman = scanman.__main__:main",
+        ]
+    },
 )

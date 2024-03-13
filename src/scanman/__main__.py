@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 import argparse
 import logging
 import os
@@ -9,17 +7,17 @@ import sys
 from langchain.memory import ConversationBufferWindowMemory
 from termcolor import colored
 
-from src.cli import prompt
-from src.commands import Command
-from src.manpage import Manpage
-from src.rag import ERROR_MSG, ask, load_retriever
-from src.state import State
+from .cli import prompt
+from .commands import Command
+from .manpage import Manpage
+from .rag import ERROR_MSG, ask, load_retriever
+from .state import State
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.ERROR)
-logger.setLevel(logging.ERROR)
+def main():
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.ERROR)
+    logger.setLevel(logging.ERROR)
 
-if __name__ == "__main__":
     argparser = argparse.ArgumentParser(prog=os.path.basename(__file__))
     argparser.add_argument("manpage")
     args = argparser.parse_args()
@@ -57,3 +55,7 @@ if __name__ == "__main__":
                 print(colored(response, "red"))
             else:
                 print(colored(response, "green"))
+
+
+if __name__ == "__main__":
+    main()
